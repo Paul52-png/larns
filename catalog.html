@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TechPulse - Каталог товаров</title>
+<style>
+:root {
+    --bg: #0b0b12; --panel: #13131e; --card: #171724;
+    --purple: #a855f7; --green: #4ade80; --text: #f4f4fa;
+    --muted: #9292a8; --border: #29293a;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: Arial, Helvetica, sans-serif; background: var(--bg); color: var(--text); line-height: 1.5; }
+button, input { font: inherit; cursor: pointer; }
+a { color: inherit; text-decoration: none; }
+
+/* ШАПКА КАТАЛОГА */
+.catalog-topbar {
+    min-height: 78px; background: #10101a; color: var(--text); display: grid;
+    grid-template-columns: auto minmax(180px, 1fr) auto auto auto; align-items: center;
+    gap: 18px; padding: 14px 4%; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 20;
+}
+.catalog-brand { color: var(--text); font-size: 23px; font-weight: 900; letter-spacing: -1px; }
+.catalog-brand span { color: var(--purple); }
+.catalog-brand i { color: var(--green); font-style: normal; }
+.catalog-search { width: 100%; height: 43px; border: 1px solid var(--border); border-radius: 12px; padding: 8px 16px; background: #191925; color: var(--text); outline: none; }
+.catalog-search:focus { border-color: var(--purple); }
+.catalog-lang { color: var(--muted); font-size: 12px; font-weight: bold; }
+.catalog-icon-button { border: 1px solid var(--border); border-radius: 10px; background: #191925; color: var(--text); font-size: 12px; padding: 8px 11px; }
+.catalog-profile { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 13px; }
+.catalog-avatar { width: 43px; height: 43px; border-radius: 13px; background: linear-gradient(135deg, var(--purple), #5426a5); display: grid; place-items: center; color: #fff; font-weight: 800; }
+.catalog-profile-name { font-size: 14px; font-weight: 700; }
+.catalog-profile-bonus { font-size: 12px; color: var(--green); }
+.catalog-home { border: 1px solid var(--border); border-radius: 8px; background: #191925; color: var(--text); padding: 8px 10px; font-size: 12px; font-weight: bold; }
+.catalog-home:hover { border-color: var(--green); color: var(--green); }
+
+/* МАКЕТ КАТАЛОГА */
+.catalog-layout { display: grid; grid-template-columns: 245px minmax(0, 1fr); min-height: calc(100vh - 150px); }
+.catalog-sidebar { background: var(--panel); border-right: 1px solid var(--border); padding: 23px 17px; font-size: 13px; }
+.catalog-sidebar h3 { font-size: 16px; font-weight: 800; margin: 0 0 12px; }
+.catalog-categories { margin-bottom: 22px; }
+.catalog-category { display: block; width: 100%; text-align: left; padding: 8px 10px; margin: 2px 0; border-radius: 8px; background: transparent; border: 1px solid transparent; color: #c7c7d7; transition: .15s; }
+.catalog-category:hover { background: #a855f712; color: white; }
+.catalog-category.active { background: #a855f71b; color: var(--purple); border-color: #a855f744; font-weight: 700; }
+.catalog-sub { padding-left: 25px; font-size: 12px; }
+
+/* ЦЕНА И СЛАЙДЕР */
+.catalog-price-box { border: 1px solid var(--border); border-radius: 12px; padding: 13px; margin: 18px 0 22px; background: #171724; }
+.catalog-price-title { font-weight: 800; margin-bottom: 10px; }
+.catalog-price-inputs { display: flex; gap: 8px; }
+.catalog-price-inputs input { width: 50%; border: 1px solid var(--border); border-radius: 7px; background: #0b0b12; color: var(--text); font-size: 12px; padding: 7px; text-align: center; }
+.catalog-range-wrap { position: relative; height: 30px; margin-top: 10px; --min-percent: 0%; --max-percent: 100%; }
+.catalog-range-wrap:before { content: ""; position: absolute; left: 0; right: 0; top: 13px; height: 5px; border-radius: 99px; background: linear-gradient(to right, var(--border) 0%, var(--border) var(--min-percent), var(--green) var(--min-percent), var(--green) var(--max-percent), var(--border) var(--max-percent), var(--border) 100%); }
+.catalog-range { position: absolute; inset: 0; width: 100%; height: 30px; margin: 0; background: none; appearance: none; pointer-events: none; outline: none; }
+.catalog-range::-webkit-slider-thumb { appearance: none; width: 15px; height: 15px; margin-top: -5px; border: 3px solid var(--bg); border-radius: 50%; background: var(--green); pointer-events: auto; cursor: grab; }
+
+.catalog-country-title { margin: 8px 0 10px; font-weight: 800; }
+.catalog-country { display: flex; gap: 8px; align-items: center; margin: 9px 0; color: #c7c7d7; cursor: pointer; }
+.catalog-country input { accent-color: var(--green); width: 15px; height: 15px; }
+
+/* ОСНОВНАЯ ЧАСТЬ КАТАЛОГА */
+.catalog-main { padding: 25px clamp(16px, 3vw, 42px) 40px; }
+.catalog-heading h1 { font-size: clamp(24px, 3vw, 32px); margin-bottom: 5px; }
+.catalog-heading p { color: var(--muted); font-size: 13px; }
+.catalog-toolbar { border: 1px solid var(--border); border-radius: 12px; background: var(--panel); min-height: 58px; display: flex; align-items: center; justify-content: flex-end; gap: 12px; padding: 10px 12px; margin-bottom: 22px; }
+.catalog-toolbar label { color: var(--muted); font-size: 12px; }
+.catalog-sort { max-width: 220px; border: 1px solid var(--border); border-radius: 8px; padding: 9px; background: #191925; color: var(--text); font-size: 12px; }
+.catalog-view-buttons { display: flex; gap: 5px; }
+.catalog-view-buttons button { border: 1px solid var(--border); border-radius: 8px; background: #191925; color: var(--muted); padding: 8px 11px; }
+.catalog-view-buttons button:hover { border-color: var(--purple); color: var(--purple); }
+
+.catalog-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; }
+.catalog-product { border: 1px solid var(--border); border-radius: 14px; background: var(--card); overflow: hidden; transition: .2s; }
+.catalog-product:hover { transform: translateY(-4px); border-color: #a855f788; }
+.catalog-photo { height: 175px; display: flex; justify-content: center; align-items: center; position: relative; background: radial-gradient(circle at 50% 45%, #a855f72b, transparent 55%), linear-gradient(145deg, #202033, #11111b); border-bottom: 1px solid var(--border); }
+.catalog-product-art { font-size: 76px; }
+.catalog-product-info { padding: 14px; display: flex; flex-direction: column; min-height: 195px; }
+.catalog-product-name { font-size: 14px; font-weight: 700; margin-bottom: 10px; min-height: 40px; }
+.catalog-rating-row { display: flex; justify-content: space-between; color: var(--muted); font-size: 11px; }
+.catalog-stars { color: #f5c451; font-size: 14px; margin: 5px 0; }
+.catalog-price-line { display: flex; align-items: baseline; gap: 8px; margin: 11px 0 13px; }
+.catalog-price { color: var(--green); font-size: 17px; font-weight: 800; }
+.catalog-old-price { color: var(--muted); text-decoration: line-through; font-size: 11px; }
+.catalog-buy { margin-top: auto; border: 1px solid var(--green); border-radius: 8px; background: var(--green); color: #07150c; width: 100%; padding: 10px; font-size: 12px; font-weight: 800; }
+.catalog-buy:hover { background: transparent; color: var(--green); }
+
+/* РЕЖИМ СПИСКА */
+.catalog-grid.list-mode { grid-template-columns: 1fr; }
+.catalog-grid.list-mode .catalog-product { display: grid; grid-template-columns: 180px minmax(0, 1fr); }
+.catalog-grid.list-mode .catalog-photo { height: 100%; border-bottom: 0; border-right: 1px solid var(--border); }
+
+/* МОДАЛЬНОЕ ОКНО КОРЗИНЫ */
+.cart-modal-overlay { position: fixed; inset: 0; background: rgba(11, 11, 18, 0.8); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
+.cart-modal-overlay.active { display: flex; }
+.cart-modal { background: var(--panel); border: 1px solid var(--border); border-radius: 20px; width: 100%; max-width: 1100px; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; }
+.cart-modal-header { padding: 20px 25px; background: #10101a; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+.cart-close-btn { background: transparent; border: none; color: var(--muted); font-size: 26px; }
+.cart-modal-body { display: grid; grid-template-columns: 1fr 340px; gap: 24px; padding: 24px; overflow: hidden; flex: 1; }
+.cart-items-container { overflow-y: auto; max-height: calc(90vh - 140px); display: flex; flex-direction: column; gap: 16px; padding-right: 5px; }
+.cart-item-row { background: var(--card); border: 1px solid var(--border); border-radius: 14px; display: grid; grid-template-columns: 90px 1.5fr 1fr 1fr; align-items: center; gap: 15px; padding: 12px; position: relative; }
+.cart-item-img { width: 90px; height: 80px; border-radius: 10px; overflow: hidden; background: #20202c; display: grid; place-items: center; }
+.cart-item-qty input { width: 65px; background: #191925; border: 1px solid var(--border); border-radius: 8px; color: white; text-align: center; padding: 8px; font-weight: 700; }
+.cart-item-price-col { display: flex; flex-direction: column; align-items: flex-end; position: relative; padding-right: 22px; }
+.cart-item-price { font-size: 15px; font-weight: 800; color: var(--green); }
+.cart-item-remove { position: absolute; top: -2px; right: 0; background: transparent; border: none; color: var(--muted); font-size: 18px; }
+.cart-summary-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; height: fit-content; }
+.summary-items-list { max-height: 220px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; }
+.summary-item-row { font-size: 12px; display: flex; justify-content: space-between; color: var(--muted); }
+.summary-item-row span:first-child { color: var(--text); }
+.summary-total-row { display: flex; justify-content: space-between; align-items: center; font-size: 16px; font-weight: 800; margin-bottom: 20px; }
+.summary-total-row span:last-child { color: var(--green); }
+.checkout-button { width: 100%; padding: 13px; background: var(--green); color: #07150c; border: none; border-radius: 10px; font-weight: 800; cursor: pointer; }
+
+.catalog-footer { min-height: 70px; background: #10101a; color: var(--muted); border-top: 1px solid var(--border); text-align: center; padding: 23px; font-size: 12px; }
+</style>
+</head>
+<body>
+
+<header class="catalog-topbar">
+    <a class="catalog-brand" href="index.html">Tech<span>Pulse</span><i>.</i></a>
+    <input class="catalog-search" id="catalogSearch" type="search" placeholder="Пошук товарів">
+    <div class="catalog-lang">UA | EN</div>
+    <button class="catalog-icon-button" type="button" id="catalogCartButton">🛒 Кошик <span id="catalogCartCount">0</span></button>
+    <div class="catalog-profile">
+        <span class="catalog-avatar">П</span>
+        <div class="catalog-profile-details">
+            <span class="catalog-profile-name">Паша</span>
+            <span class="catalog-profile-bonus">1250 грн бонусов</span>
+        </div>
+        <!-- Кнопка возврата на главную страницу -->
+        <a href="index.html" class="catalog-home">Головна</a>
+    </div>
+</header>
+
+<div class="catalog-layout">
+    <aside class="catalog-sidebar">
+        <div class="catalog-categories">
+            <h3>Категорії</h3>
+            <button class="catalog-category active" data-cat="all">Усі товари</button>
+            <button class="catalog-category catalog-sub" data-cat="computers">Комп’ютери</button>
+            <button class="catalog-category catalog-sub" data-cat="audio">Навушники та звук</button>
+            <button class="catalog-category catalog-sub" data-cat="accessories">Периферія</button>
+            <button class="catalog-category" data-cat="gadgets">Гаджети</button>
+        </div>
+        <div class="catalog-price-box">
+            <div class="catalog-price-title">Ціна</div>
+            <div class="catalog-price-inputs">
+                <input id="catalogMinText" type="number" min="0" max="30000" value="0">
+                <input id="catalogMaxText" type="number" min="0" max="30000" value="30000">
+            </div>
+            <div class="catalog-range-wrap" id="catalogRangeWrap">
+                <input class="catalog-range" id="catalogMinRange" type="range" min="0" max="30000" step="100" value="0">
+                <input class="catalog-range" id="catalogMaxRange" type="range" min="0" max="30000" step="100" value="30000">
+            </div>
+        </div>
+        <div>
+            <div class="catalog-country-title">Країна-виробник</div>
+            <label class="catalog-country"><input type="checkbox" value="Китай"> Китай</label>
+            <label class="catalog-country"><input type="checkbox" value="США"> США</label>
+            <label class="catalog-country"><input type="checkbox" value="Франція"> Франція</label>
+            <label class="catalog-country"><input type="checkbox" value="Німеччина"> Німеччина</label>
+            <label class="catalog-country"><input type="checkbox" value="Україна"> Україна</label>
+            <label class="catalog-country"><input type="checkbox" value="Польща"> Польща</label>
+            <label class="catalog-country"><input type="checkbox" value="Японія"> Японія</label>
+        </div>
+    </aside>
+
+    <main class="catalog-main">
+        <div class="catalog-heading">
+            <h1>Всі товари</h1>
+            <p>Знайдіть техніку для роботи, навчання та відпочинку</p>
+        </div>
+        <div class="catalog-toolbar">
+            <label for="catalogSort">Сортувати товари</label>
+            <select class="catalog-sort" id="catalogSort">
+                <option value="relevant">За релевантністю</option>
+                <option value="cheap">Від дешевих до дорогих</option>
+                <option value="expensive">Від дорогих до дешевих</option>
+                <option value="rating">За рейтингом</option>
+            </select>
+            <div class="catalog-view-buttons">
+                <button id="catalogGridView" title="Сітка">☷</button>
+                <button id="catalogListView" title="Список">☰</button>
+            </div>
+        </div>
+        <div class="catalog-grid" id="catalogProducts"></div>
+    </main>
+</div>
+
+<!-- МОДАЛЬНОЕ ОКНО КОРЗИНЫ -->
+<div class="cart-modal-overlay" id="cartModal">
+    <div class="cart-modal">
+        <div class="cart-modal-header">
+            <h2>Корзина заказов</h2>
+            <button class="cart-close-btn" id="closeCartModal">×</button>
+        </div>
+        <div class="cart-modal-body">
+            <div class="cart-items-container" id="cartItemsContainer"></div>
+            <div class="cart-summary-card">
+                <h3>Ваш заказ</h3>
+                <div class="summary-items-list" id="summaryItemsList"></div>
+                <div class="summary-divider" style="height:1px;background:var(--border);margin:10px 0;"></div>
+                <div class="summary-total-row"><span>Сума замовлення:</span><span id="cartTotalSum">0 грн</span></div>
+                <button class="checkout-button" id="checkoutBtn">Оформити замовлення</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer class="catalog-footer">© 2026 <strong>TechPulse</strong> · Технології для кожного</footer>
+
+<script>
+const catalogProducts = [
+    {id:101, name:"Бездротові навушники", price:2200, oldPrice:3000, rating:4.9, reviews:300, category:"audio", country:"Китай", icon:"🎧"},
+    {id:102, name:"Механічна клавіатура", price:1200, oldPrice:1600, rating:4.8, reviews:185, category:"accessories", country:"Китай", icon:"⌨️"},
+    {id:103, name:"Ігрова миша", price:850, oldPrice:1100, rating:4.7, reviews:300, category:"accessories", country:"США", icon:"🖱️"},
+    {id:104, name:"Ігрова гарнітура", price:1800, oldPrice:2400, rating:4.6, reviews:126, category:"audio", country:"Німеччина", icon:"🎮"},
+    {id:105, name:"Ноутбук", price:25999, oldPrice:28999, rating:4.9, reviews:94, category:"computers", country:"США", icon:"💻"},
+    {id:106, name:"Розумний годинник", price:3200, oldPrice:3900, rating:4.5, reviews:210, category:"gadgets", country:"Китай", icon:"⌚"},
+    {id:107, name:"Портативна колонка", price:1500, oldPrice:1900, rating:4.6, reviews:87, category:"audio", country:"Японія", icon:"🔊"},
+    {id:108, name:"Вебкамера HD", price:999, oldPrice:1299, rating:4.4, reviews:65, category:"accessories", country:"Україна", icon:"📷"},
+    {id:109, name:"Ігровий монітор", price:7999, oldPrice:8999, rating:4.8, reviews:143, category:"computers", country:"Німеччина", icon:"🖥️"},
+    {id:110, name:"Фітнес-браслет", price:1199, oldPrice:1499, rating:4.5, reviews:180, category:"gadgets", country:"Китай", icon:"📟"},
+    {id:111, name:"USB-мікрофон", price:2450, oldPrice:2999, rating:4.7, reviews:73, category:"audio", country:"Франція", icon:"🎙️"},
+    {id:112, name:"Комп'ютерна миша", price:499, oldPrice:699, rating:4.3, reviews:55, category:"accessories", country:"Польща", icon:"🖱️"}
+];
+
+let cart = JSON.parse(localStorage.getItem('techpulse_cart')) || [];
+let catalogCategory = "all";
+const catalogProductsBox = document.getElementById("catalogProducts");
+
+function updateCartCounter() {
+    const totalCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+    const countEl = document.getElementById("catalogCartCount");
+    if(countEl) countEl.textContent = totalCount;
+    localStorage.setItem('techpulse_cart', JSON.stringify(cart));
+}
+
+function renderCatalogProducts() {
+    const search = document.getElementById("catalogSearch").value.trim().toLowerCase();
+    const minPrice = Number(document.getElementById("catalogMinText").value || 0);
+    const maxPrice = Number(document.getElementById("catalogMaxText").value || 30000);
+    const checkedCountries = [...document.querySelectorAll(".catalog-country input:checked")].map(el => el.value);
+
+    let items = catalogProducts.filter(p =>
+        (catalogCategory === "all" || p.category === catalogCategory) &&
+        p.name.toLowerCase().includes(search) &&
+        p.price >= minPrice && p.price <= maxPrice &&
+        (checkedCountries.length === 0 || checkedCountries.includes(p.country))
+    );
+
+    const sort = document.getElementById("catalogSort").value;
+    if (sort === "cheap") items.sort((a,b) => a.price - b.price);
+    if (sort === "expensive") items.sort((a,b) => b.price - a.price);
+    if (sort === "rating") items.sort((a,b) => b.rating - a.rating);
+
+    catalogProductsBox.replaceChildren();
+    if (!items.length) {
+        catalogProductsBox.innerHTML = '<p style="grid-column:1/-1;padding:30px;color:var(--muted);text-align:center;">За цими фільтрами товарів не знайдено.</p>';
+        return;
+    }
+
+    items.forEach(product => {
+        const card = document.createElement("article");
+        card.className = "catalog-product";
+        card.innerHTML = `
+            <div class="catalog-photo"><span class="catalog-product-art">${product.icon}</span></div>
+            <div class="catalog-product-info">
+                <div class="catalog-product-name">${product.name}</div>
+                <div class="catalog-rating-row"><span>Рейтинг ${product.rating.toFixed(1)}</span><span>💬 ${product.reviews}</span></div>
+                <div class="catalog-stars">★★★★★</div>
+                <div class="catalog-price-line"><span class="catalog-price">₴ ${product.price.toLocaleString("uk-UA")}</span><span class="catalog-old-price">${product.oldPrice.toLocaleString("uk-UA")}</span></div>
+                <button class="catalog-buy">У кошик</button>
+            </div>`;
+        
+        card.querySelector(".catalog-buy").addEventListener("click", () => {
+            const storeProduct = {
+                id: product.id, name: product.name, article: "TP-" + product.id,
+                price: product.price, rating: product.rating, category: product.category,
+                section: "new", image: ""
+            };
+            const existing = cart.find(item => item.product.id === product.id);
+            if (existing) existing.quantity++;
+            else cart.push({product: storeProduct, quantity: 1});
+            
+            updateCartCounter();
+            const btn = card.querySelector(".catalog-buy");
+            btn.textContent = "Додано ✓";
+            setTimeout(() => btn.textContent = "У кошик", 900);
+        });
+        catalogProductsBox.appendChild(card);
+    });
+}
+
+function renderCartModal() {
+    const container = document.getElementById("cartItemsContainer");
+    const summaryList = document.getElementById("summaryItemsList");
+    const totalSumEl = document.getElementById("cartTotalSum");
+    container.replaceChildren();
+    summaryList.replaceChildren();
+
+    if (cart.length === 0) {
+        container.innerHTML = '<p style="color:var(--muted);text-align:center;padding:30px;">Корзина пуста</p>';
+        totalSumEl.textContent = "0 грн";
+        return;
+    }
+
+    let grandTotal = 0;
+    cart.forEach((cartItem, index) => {
+        const p = cartItem.product;
+        const itemTotal = p.price * cartItem.quantity;
+        grandTotal += itemTotal;
+
+        const row = document.createElement("div");
+        row.className = "cart-item-row";
+        row.innerHTML = `
+            <div class="cart-item-img" style="display:grid;place-items:center;font-size:30px">📦</div>
+            <div><h4 style="font-size:14px">${p.name}</h4><span style="font-size:11px;color:var(--muted)">Арт: ${p.article}</span></div>
+            <div class="cart-item-qty"><input type="number" min="1" value="${cartItem.quantity}"></div>
+            <div class="cart-item-price-col"><span class="cart-item-price">${itemTotal.toLocaleString("uk-UA")} грн</span><button class="cart-item-remove">✕</button></div>`;
+        
+        row.querySelector("input").addEventListener("input", (e) => {
+            let val = parseInt(e.target.value);
+            cartItem.quantity = isNaN(val) || val < 1 ? 1 : val;
+            updateCartCounter();
+            renderCartModal();
+        });
+        row.querySelector(".cart-item-remove").addEventListener("click", () => {
+            cart.splice(index, 1);
+            updateCartCounter();
+            renderCartModal();
+        });
+        container.appendChild(row);
+
+        const sumRow = document.createElement("div");
+        sumRow.className = "summary-item-row";
+        sumRow.innerHTML = `<span>${p.name} (x${cartItem.quantity})</span><span>${itemTotal.toLocaleString("uk-UA")} грн</span>`;
+        summaryList.appendChild(sumRow);
+    });
+    totalSumEl.textContent = grandTotal.toLocaleString("uk-UA") + " грн";
+}
+
+// Фильтрация по категориям
+document.querySelectorAll(".catalog-category").forEach(btn => {
+    btn.addEventListener("click", () => {
+        document.querySelectorAll(".catalog-category").forEach(i => i.classList.remove("active"));
+        btn.classList.add("active");
+        catalogCategory = btn.dataset.cat;
+        renderCatalogProducts();
+    });
+});
+
+document.getElementById("catalogSearch").addEventListener("input", renderCatalogProducts);
+document.getElementById("catalogSort").addEventListener("change", renderCatalogProducts);
+document.querySelectorAll(".catalog-country input").forEach(input => input.addEventListener("change", renderCatalogProducts));
+
+// Слайдер цен
+const catalogMinRange = document.getElementById("catalogMinRange");
+const catalogMaxRange = document.getElementById("catalogMaxRange");
+const catalogMinText = document.getElementById("catalogMinText");
+const catalogMaxText = document.getElementById("catalogMaxText");
+const catalogRangeWrap = document.getElementById("catalogRangeWrap");
+
+function updateRange() {
+    const min = +catalogMinRange.value, max = +catalogMaxRange.value;
+    catalogRangeWrap.style.setProperty("--min-percent", (min / 30000 * 100) + "%");
+    catalogRangeWrap.style.setProperty("--max-percent", (max / 30000 * 100) + "%");
+}
+
+catalogMinRange.addEventListener("input", () => {
+    if (+catalogMinRange.value > +catalogMaxRange.value) catalogMinRange.value = catalogMaxRange.value;
+    catalogMinText.value = catalogMinRange.value;
+    updateRange();
+    renderCatalogProducts();
+});
+catalogMaxRange.addEventListener("input", () => {
+    if (+catalogMaxRange.value < +catalogMinRange.value) catalogMaxRange.value = catalogMinRange.value;
+    catalogMaxText.value = catalogMaxRange.value;
+    updateRange();
+    renderCatalogProducts();
+});
+
+// Переключение сетка / список
+document.getElementById("catalogGridView").addEventListener("click", () => catalogProductsBox.classList.remove("list-mode"));
+document.getElementById("catalogListView").addEventListener("click", () => catalogProductsBox.classList.add("list-mode"));
+
+// Модальное окно корзины в каталоге
+const cartModal = document.getElementById("cartModal");
+document.getElementById("catalogCartButton").addEventListener("click", () => { renderCartModal(); cartModal.classList.add("active"); });
+document.getElementById("closeCartModal").addEventListener("click", () => cartModal.classList.remove("active"));
+
+document.getElementById("checkoutBtn").addEventListener("click", () => {
+    if (cart.length === 0) { alert("Корзина пуста!"); return; }
+    alert("Замовлення успішно оформлено!");
+    cart = [];
+    updateCartCounter();
+    cartModal.classList.remove("active");
+});
+
+updateCartCounter();
+updateRange();
+renderCatalogProducts();
+</script>
+</body>
+</html>
